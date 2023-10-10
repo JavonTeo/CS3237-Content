@@ -6,13 +6,13 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-#define DHTPIN 16
+#define DHTPIN 16 // VCC: 5V / 3.3V
 #define DHTTYPE DHT11
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
-#define MQ2_AOPIN 36
-#define RAIN_AOPIN 39
-#define IR_DOPIN 14
+#define MQ2_AOPIN 36 // VCC: 5V
+#define RAIN_AOPIN 39 // VCC: 3.3V
+#define IR_DOPIN 14 // VCC: 3.3V
 
 WiFiClient client;
 
