@@ -2,10 +2,15 @@ import paho.mqtt.client as mqtt
 from time import sleep
 def on_connect(client, userdata, flags, rc):
 	print("Connected with result code: " + str(rc))
-	client.subscribe("hello/#")
+	# client.subscribe("hello/#")
+	client.subscribe("weather/temp")
+	client.subscribe("weather/humidity")
 
 def on_message(client, userdata, message):
-	print("Received message " + message.payload.decode())
+	if message.topic == "weather/temp":
+		print(f"Received message: {message.payload.decode()} °C on topic: {message.topic}")
+	else:
+		print(f"Received message: {message.payload.decode()} % on topic: {message.topic}")
 
 client = mqtt.Client()
 client.on_connect = on_connect
