@@ -23,7 +23,7 @@ unsigned long myChannelID = 2294439;
 const char * myWriteAPIKey = "GALZQLFOOGRRQ2J3";
 
 unsigned long lastTime = 0;
-unsigned long timerDelay = 600000; //600000 ms = 10 min -> updates cloud every 10 minutes.
+unsigned long timerDelay = 300000; //600000 ms = 10 min -> updates cloud every 10 minutes.
 int humanCount = 0;
 bool state = true;
 
@@ -65,7 +65,7 @@ struct dhtValues read_dht() {
 int read_gas() {
   // MQ2 gas sensor to read ppm. Analog data. Test using a plastic spark wheel lighter, just press the button without sparking it.
   int gasValue = analogRead(MQ2_AOPIN);
-  // Serial.print("MQ2 sensor AO value: ");
+  Serial.print("MQ2 sensor AO value: ");
   // Serial.println(gasValue);
   return gasValue;
 }
@@ -73,7 +73,7 @@ int read_gas() {
 int read_damp() {
   // Rain sensor to read dampness of toilet floor. Analog data.
   int dampness = analogRead(RAIN_AOPIN);
-  // Serial.print("Rain sensor AO value: ");
+  Serial.print("Rain sensor AO value: ");
   // Serial.println(dampness);
   return dampness;
 }
@@ -88,8 +88,8 @@ void read_motion() {
   if (!digitalRead(IR_DOPIN) && state){
     humanCount++;
     state = false;
-    // Serial.print("Human Count: ");
-    // Serial.println(humanCount);
+    Serial.print("Human Count: ");
+    Serial.println(humanCount);
     delay(100);
   }
   if (digitalRead(IR_DOPIN)) {

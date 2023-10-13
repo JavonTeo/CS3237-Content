@@ -13,7 +13,7 @@ const char *ssid = "JAVON PIXEL 6";
 const char *pass = "PixelatedIndeed";
 
 // Test Mosquitto server, see: https://test.mosquitto.org
-char *server = "mqtt://192.168.113.240:1883"; //ip address should be your Windows Wi-Fi address
+char *server = "mqtt://192.168.113.55:1883"; //ip address should be your Windows Wi-Fi address
 
 char *subscribeTopic = "hello/world";
 char *publishTopic = "hello/esp";
