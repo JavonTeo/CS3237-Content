@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 from time import sleep
-
+count = 0
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code: " + str(rc))
     print("Waiting for 2 seconds")
@@ -10,22 +10,28 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     print(f"Received message: {message.payload.decode()} °C on topic: {message.topic}")
     float_temp = float(message.payload.decode('utf-8'))
-    # reply = classify_temp(float_temp)
-    # if reply:
-    # 	client.publish("classification/temp", reply)
-    client.publish("classification/temp", "RCVD")
+    reply = classify_temp(float_temp)
+    if reply != None:
+        # if count % 2 == 0:
+        #     count = 0
+        #     client.publish("classification/temp", "COLD")
+        # else:
+        #     count = 1
+        #     client.publish("classification/temp", "HOT")
+        print(reply)
+        client.publish("classification/temp", reply)
 
 def classify_temp(temp):
 	reply = None
 	if temp > 30:
 		print("Too hot! Opening window...")
-		reply = 0
+		reply = "HOT"
 	elif temp < 25:
 		print("Too cold! Closing window...")
-		reply = 1
+		reply = "COLD"
 	else:
 		print("Between 25-30. Partially opening window...")
-		reply = 2
+		reply = "BETWEEN"
 
 	return reply
 
