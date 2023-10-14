@@ -15,9 +15,6 @@ const char *pass = "PixelatedIndeed";
 // Test Mosquitto server, see: https://test.mosquitto.org
 char *server = "mqtt://192.168.113.55:1883"; //ip address should be your Windows Wi-Fi address
 
-char *subscribeTopic = "hello/world";
-char *publishTopic = "hello/esp";
-
 char *subscribeTempTopic = "classification/temp";
 char *publishTempTopic = "weather/temp";
 char *publishHumidTopic = "weather/humidity";
@@ -59,15 +56,11 @@ void setup()
     mqttClient.loopStart();
 }
 
-int pubCount = 0;
-
 void loop()
 {
     struct measurements mmts = dht11_loop(); // this collects data from the DHT11 sensor. 
 
-    // String msg = "Hello: " + String(pubCount++);
     delay(1000);
-    // mqttClient.publish(publishTopic, msg, 0, false);
     mqttClient.publish(publishTempTopic, String(mmts.temperature), 0, false);
     mqttClient.publish(publishHumidTopic, String(mmts.humidity), 0, false);
 }
@@ -106,9 +99,9 @@ void onConnectionEstablishedCallback(esp_mqtt_client_handle_t client)
 {
     if (mqttClient.isMyTurn(client)) // can be omitted if only one client
     {
-        mqttClient.subscribe(subscribeTopic, [](const String &payload)
+        mqttClient.subscribe(subscribeTempTopic, [](const String &payload)
                              {
-                              Serial.println(String(subscribeTopic)+String("")+String(payload.c_str()));
+                              Serial.println(String(subscribeTempTopic)+String("")+String(payload.c_str()));
                               });                 
 
         mqttClient.subscribe("bar/#", [](const String &topic, const String &payload)
