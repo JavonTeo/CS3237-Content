@@ -13,8 +13,8 @@
 #define DHTPIN 16
 #define DHTTYPE    DHT11
 
-const char *ssid = "JAVON PIXEL 6";
-const char *pass = "PixelatedIndeed";
+const char *ssid = <WIFI_NAME>;
+const char *pass = <WIFI_PWD>;
 
 // Test Mosquitto server, see: https://test.mosquitto.org
 char *server = "mqtt://192.168.113.55:1883"; //ip address should be your Windows Wi-Fi address
@@ -76,13 +76,13 @@ void loop()
     struct measurements mmts = dht11_loop(); // this collects data from the DHT11 sensor.
     Serial.print("mmts:");
     Serial.println(String(mmts.temperature));
-    bool success = mqttClient.publish(publishTempTopic, String(mmts.temperature), 0, false);
-    Serial.print(success);
+    mqttClient.publish(publishTempTopic, String(mmts.temperature), 0, false);
     // mqttClient.publish(publishHumidTopic, String(mmts.humidity), 0, false);
     delay(5000);
     actuateServo(classification);
     Serial.println("Going to sleep now");
     delay(5000);
+    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     esp_deep_sleep_start(); // This makes ESP32 go to sleep.
 }
 
