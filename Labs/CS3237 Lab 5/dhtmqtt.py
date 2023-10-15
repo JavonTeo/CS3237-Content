@@ -1,3 +1,7 @@
+"""
+This is used for task 8.
+"""
+
 import paho.mqtt.client as mqtt
 from time import sleep
 count = 0
@@ -12,12 +16,6 @@ def on_message(client, userdata, message):
     float_temp = float(message.payload.decode('utf-8'))
     reply = classify_temp(float_temp)
     if reply != None:
-        # if count % 2 == 0:
-        #     count = 0
-        #     client.publish("classification/temp", "COLD")
-        # else:
-        #     count = 1
-        #     client.publish("classification/temp", "HOT")
         print(reply)
         client.publish("classification/temp", reply)
 

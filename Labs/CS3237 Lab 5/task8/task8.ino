@@ -7,7 +7,7 @@
 #include <WiFi.h>
 #include "ESP32MQTTClient.h"
 
-#define uS_TO_S_FACTOR 1000000ULL  /* Conversion factor for micro seconds to seconds */
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  20        /* Time ESP32 will go to sleep (in seconds) */
 
 #define DHTPIN 16
@@ -17,7 +17,7 @@ const char *ssid = "JAVON PIXEL 6";
 const char *pass = "PixelatedIndeed";
 
 // Test Mosquitto server, see: https://test.mosquitto.org
-char *server = "mqtt://192.168.113.240:1883"; //ip address should be your Windows Wi-Fi address
+char *server = "mqtt://192.168.113.55:1883"; //ip address should be your Windows Wi-Fi address
 
 char *subscribeTempTopic = "classification/temp";
 char *publishTempTopic = "weather/temp";
@@ -33,6 +33,8 @@ Servo myservo;
 int pos = 0;
 int servoPin = 13;
 
+RTC_DATA_ATTR int bootCount = 0;
+
 struct measurements {
   float temperature;
   float humidity;
@@ -41,6 +43,7 @@ struct measurements {
 void setup()
 {
     Serial.begin(115200);
+    delay(1000);
 
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
@@ -69,6 +72,21 @@ void setup()
     mqttClient.loopStart();
 }
 
+void loop()
+{
+    struct measurements mmts = dht11_loop(); // this collects data from the DHT11 sensor.
+    Serial.print("mmts:");
+    Serial.println(String(mmts.temperature));
+    bool success = mqttClient.publish(publishTempTopic, String(mmts.temperature), 0, false);
+    Serial.print(success);
+    // mqttClient.publish(publishHumidTopic, String(mmts.humidity), 0, false);
+    delay(5000);
+    actuateServo(classification);
+    Serial.println("Going to sleep now");
+    delay(5000);
+    esp_deep_sleep_start(); // This makes ESP32 go to sleep.
+}
+
 void setup_servo()
 {
   // Allow allocation of all timers
@@ -78,18 +96,6 @@ void setup_servo()
 	ESP32PWM::allocateTimer(3);
 	myservo.setPeriodHertz(50);    // standard 50 hz servo
 	myservo.attach(servoPin, 1000, 2000); // attaches the servo on pin 13 to the servo object
-}
-
-void loop()
-{
-  struct measurements mmts = dht11_loop(); // this collects data from the DHT11 sensor. 
-  mqttClient.publish(publishTempTopic, String(mmts.temperature), 0, false);
-  mqttClient.publish(publishHumidTopic, String(mmts.humidity), 0, false);
-  delay(5000);
-  actuateServo(classification);
-  Serial.println("Going to sleep now");
-  delay(5000);
-  esp_deep_sleep_start(); // This makes ESP32 go to sleep.
 }
 
 struct measurements dht11_loop() {
