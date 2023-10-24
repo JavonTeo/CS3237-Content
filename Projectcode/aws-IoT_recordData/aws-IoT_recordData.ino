@@ -49,11 +49,11 @@ struct dhtValues read_dht() {
   dhtVals.humidity = h;
   dhtVals.temperature = t;
  
-  Serial.print(F("Humidity: "));
-  Serial.print(h);
-  Serial.print(F("%  Temperature: "));
-  Serial.print(t);
-  Serial.println(F("°C "));
+  // Serial.print(F("Humidity: "));
+  // Serial.print(h);
+  // Serial.print(F("%  Temperature: "));
+  // Serial.print(t);
+  // Serial.println(F("°C "));
 
   return dhtVals;
 }
@@ -61,7 +61,7 @@ struct dhtValues read_dht() {
 int read_gas() {
   // MQ2 gas sensor to read ppm. Analog data. Test using a plastic spark wheel lighter, just press the button without sparking it.
   int gasValue = analogRead(MQ2_AOPIN);
-  Serial.print("MQ2 sensor AO value: ");
+  // Serial.print("MQ2 sensor AO value: ");
   // Serial.println(gasValue);
   return gasValue;
 }
@@ -69,7 +69,7 @@ int read_gas() {
 int read_damp() {
   // Rain sensor to read dampness of toilet floor. Analog data.
   int dampness = analogRead(RAIN_AOPIN);
-  Serial.print("Rain sensor AO value: ");
+  // Serial.print("Rain sensor AO value: ");
   // Serial.println(dampness);
   return dampness;
 }
@@ -110,8 +110,8 @@ void read_motion() {
   if (!digitalRead(IR_DOPIN) && state){
     humanCount++;
     state = false;
-    Serial.print("Human Count: ");
-    Serial.println(humanCount);
+    // Serial.print("Human Count: ");
+    // Serial.println(humanCount);
     delay(100);
   }
   if (digitalRead(IR_DOPIN)) {
@@ -213,12 +213,12 @@ void loop()
 {
  if ((millis() - lastTime) > timerDelay) {
   publishMessage();
-  client.loop();
 
   lastTime = millis();
   humanCount = 0;
  }
 
  read_motion();
+ client.loop();
 }
 
