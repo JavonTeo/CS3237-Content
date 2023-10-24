@@ -17,6 +17,8 @@ PubSubClient client(net);
 DHT dht(DHTPIN, DHTTYPE);
 #define MQ2_AOPIN 36 // 36 is at SVP. VCC: 5V
 #define RAIN_AOPIN 39 // 39 is at SVN. VCC: 3.3V
+#define HC_TRIGPIN 5 
+#define HC_ECHOPIN 18
 #define IR_DOPIN 14 // VCC: 3.3V
 
 // Time values and HC-SR501 sensor global variables
@@ -72,9 +74,35 @@ int read_damp() {
   return dampness;
 }
 
-void read_depth() {
+float read_depth() {
   // Infrared HC-SR04 sensor to read depth of trash bin. Analog data.
+  // Clears the trigPin
+  float SOUND_SPEED  = 0.034;
+  float CM_TO_INCH = 0.393701;
+  digitalWrite(HC_TRIGPIN, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(HC_TRIGPIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(HC_TRIGPIN, LOW);
 
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+  float duration = pulseIn(HC_ECHOPIN, HIGH);
+  
+  // Calculate the distance
+  float distanceCm = duration * SOUND_SPEED/2;
+  
+  // Convert to inches
+  float distanceInch = distanceCm * CM_TO_INCH;
+  
+  // Prints the distance in the Serial Monitor
+  Serial.print("Distance (cm): ");
+  Serial.println(distanceCm);
+  Serial.print("Distance (inch): ");
+  Serial.println(distanceInch);
+  
+  delay(1000);
+  return distanceCm;
 }
 
 void read_motion() {  
@@ -143,12 +171,14 @@ void publishMessage()
   struct dhtValues dhtVals = read_dht();
   int gasValue = read_gas();
   int dampness = read_damp();
+  float binDepth = read_depth(); 
 
   StaticJsonDocument<200> doc;
-  doc["humidity"] = dhtVals.humidity;
   doc["temperature"] = dhtVals.temperature;
+  doc["humidity"] = dhtVals.humidity;
   doc["gasValue"] = gasValue;
   doc["dampness"] = dampness;
+  doc["binDepth"] = binDepth;
   doc["humanCount"] = humanCount;
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer); // print to client
@@ -173,6 +203,8 @@ void setup()
   Serial.begin(115200);
   dht.begin();
   pinMode(IR_DOPIN, INPUT);
+  pinMode(HC_TRIGPIN, OUTPUT);
+  pinMode(HC_ECHOPIN, INPUT);
 
   connectAWS();
 }
