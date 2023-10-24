@@ -10,7 +10,7 @@
  
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
- 
+
 float h ;
 float t;
  
@@ -96,21 +96,20 @@ void loop()
 {
   h = dht.readHumidity();
   t = dht.readTemperature();
- 
- 
+
+
   if (isnan(h) || isnan(t) )  // Check if any reads failed and exit early (to try again).
   {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
   }
- 
+
   Serial.print(F("Humidity: "));
   Serial.print(h);
   Serial.print(F("%  Temperature: "));
   Serial.print(t);
   Serial.println(F("°C "));
- 
+
   publishMessage();
-  client.loop();
   delay(1000);
 }
