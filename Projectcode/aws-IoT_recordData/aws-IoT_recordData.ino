@@ -93,13 +93,16 @@ float read_depth() {
   float distanceCm = duration * SOUND_SPEED/2;
   
   // Convert to inches
-  float distanceInch = distanceCm * CM_TO_INCH;
+  // float distanceInch = distanceCm * CM_TO_INCH;
+  if (distanceCm > 15.00) {
+    distanceCm = 15.00;
+  }
   
   // Prints the distance in the Serial Monitor
   Serial.print("Distance (cm): ");
   Serial.println(distanceCm);
-  Serial.print("Distance (inch): ");
-  Serial.println(distanceInch);
+  // Serial.print("Distance (inch): ");
+  // Serial.println(distanceInch);
   
   delay(1000);
   return distanceCm;
@@ -118,6 +121,11 @@ void read_motion() {
     state = true;
     delay(100);
   }
+}
+
+int sim_satisfaction() {
+  int rand_int = ((int)random(1, 5)) + 1;
+  return rand_int;
 }
 
 // Connects to AWS
@@ -171,7 +179,8 @@ void publishMessage()
   struct dhtValues dhtVals = read_dht();
   int gasValue = read_gas();
   int dampness = read_damp();
-  float binDepth = read_depth(); 
+  float binDepth = read_depth();
+  int satisfaction = sim_satisfaction();
 
   StaticJsonDocument<200> doc;
   doc["temperature"] = dhtVals.temperature;
@@ -180,6 +189,7 @@ void publishMessage()
   doc["dampness"] = dampness;
   doc["binDepth"] = binDepth;
   doc["humanCount"] = humanCount;
+  doc["satisfaction"] = satisfaction;
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer); // print to client
  
