@@ -38,7 +38,7 @@ typedef struct esp2_struct_message {
   int id;
   float temperature;
   float humidity;
-  float gas;
+  int gas;
   int dampness,
   float trash;
 }esp2_struct_message;
@@ -126,7 +126,7 @@ void publishMessage()
 {
   float temperature = board2.temperature;
   float humidity = board2.humidity;
-  float gas = board2.gas;
+  int gas = board2.gas;
   int dampness = board2.dampness,
   float trash = board2.trash;
 
