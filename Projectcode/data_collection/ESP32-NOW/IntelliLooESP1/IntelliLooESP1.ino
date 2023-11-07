@@ -11,11 +11,11 @@
 
 /**
 How it works:
-1. ESP32-1 sends data, which is stored in board1. board1_filled is set to true.
-2. ESP32-2 sends data, which is stored in board2. board2_filled is set to true.
-3. loop() checks if both board1_filled and board2_filled is true. If so, it continues to next step. Else, it just waits till this happens.
+1. ESP32-2 sends data, which is stored in board2. board2_filled is set to true.
+2. ESP32-3 sends data, which is stored in board3. board3_filled is set to true.
+3. loop() checks if both board2_filled and board3_filled is true. If so, it continues to next step. Else, it just waits till this happens.
 4. JSON containing the sensor data is constructed, then sent to AWS.
-5. Both board1_filled and board2_filled is set to false.
+5. Both board2_filled and board3_filled is set to false.
 6. Cycle repeats.
 **/
 
@@ -34,26 +34,26 @@ PubSubClient client(net);
 
 // Structure example to receive data
 // Must match the sender structure
-typedef struct esp1_struct_message {
+typedef struct esp2_struct_message {
   int id;
   float temperature;
   float humidity;
   float gas;
   int dampness,
   float trash;
-}esp1_struct_message;
+}esp2_struct_message;
 
-typedef struct esp2_struct_message {
+typedef struct esp3_struct_message {
   int id;
   int motion;
   float rating;
-}esp2_struct_message;
+}esp3_struct_message;
 
 // Create a structure to hold the readings from each board
-esp1_struct_message board1;
 esp2_struct_message board2;
-bool board1_filled = false;
+esp3_struct_message board3;
 bool board2_filled = false;
+bool board3_filled = false;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) {
@@ -63,14 +63,14 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   Serial.println(macStr);
   // Update the structures with the new incoming data
-  if (len == sizeof(board1)) {
-    memcpy(&board1, incomingData, sizeof(board1));
-    Serial.printf("Board ID %u: %u bytes\n", board1.id, len);
-    board1_filled = true;
-  } else if (len == sizeof(board2)) {
+  if (len == sizeof(board2)) {
     memcpy(&board2, incomingData, sizeof(board2));
     Serial.printf("Board ID %u: %u bytes\n", board2.id, len);
     board2_filled = true;
+  } else if (len == sizeof(board3)) {
+    memcpy(&board3, incomingData, sizeof(board3));
+    Serial.printf("Board ID %u: %u bytes\n", board3.id, len);
+    board3_filled = true;
   } else {
     Serial.println("Unknown data type");
   }
@@ -124,14 +124,14 @@ void connectAWS()
 // Publishes messages to the cloud at AWS_IOT_PUBLISH_TOPIC
 void publishMessage()
 {
-  float temperature = board1.temperature;
-  float humidity = board1.humidity;
-  float gas = board1.gas;
-  int dampness = board1.dampness,
-  float trash = board1.trash;
+  float temperature = board2.temperature;
+  float humidity = board2.humidity;
+  float gas = board2.gas;
+  int dampness = board2.dampness,
+  float trash = board2.trash;
 
-  int motion = board2.motion;
-  float rating = board2.rating;
+  int motion = board3.motion;
+  float rating = board3.rating;
 
   StaticJsonDocument<200> doc;
   doc["temperature"] = temperature;
@@ -179,10 +179,10 @@ void setup() {
 }
  
 void loop() {
-  if (board1_filled && board2_filled) {
+  if (board2_filled && board3_filled) {
     //do something
     publishMessage();
-    board1_filled = false;
     board2_filled = false;
+    board3_filled = false;
   }
 }
