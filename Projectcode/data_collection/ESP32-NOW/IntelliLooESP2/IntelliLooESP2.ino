@@ -7,6 +7,7 @@
 #include "DHT.h"
 #define DHTPIN 16     // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT21   // DHT 21 sensor
+// #define DHTTYPE DHT11   // DHT 11 sensor
 DHT dht(DHTPIN, DHTTYPE);
   // MQ2 Sensor Setup
 #define MQ2_AOPIN 15 
@@ -15,6 +16,10 @@ DHT dht(DHTPIN, DHTTYPE);
   // Ultrasound Sensor Setup
 #define HC_TRIGPIN 5 
 #define HC_ECHOPIN 18
+
+// Deep Sleep
+#define uS_TO_S_FACTOR 1000000ULL
+#define TIME_TO_SLEEP 300
 
 // REPLACE WITH THE RECEIVER'S MAC Address
 uint8_t broadcastAddress[] = {0x64, 0xB7, 0x08, 0x60, 0xC6, 0x5C}; // Javon's ESP32 MAC
@@ -125,6 +130,7 @@ float read_trash() {
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -175,5 +181,6 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(10000);
+  delay(5000);
+  esp_deep_sleep_start();
 }
