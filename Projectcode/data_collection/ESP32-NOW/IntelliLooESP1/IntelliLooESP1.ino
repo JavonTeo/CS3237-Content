@@ -19,8 +19,6 @@ How it works:
 6. Cycle repeats.
 **/
 
-#include <esp_now.h>
-
 // WiFi Connection Libraries / AWS pub-sub Topics
 #include "Secrets.h" // Customer file placed in libraries, to store AWS Certificates/Keys
 #include <WiFiClientSecure.h>
@@ -32,6 +30,18 @@ How it works:
 WiFiClientSecure net = WiFiClientSecure();
 PubSubClient client(net);
 
+#include <esp_now.h> // For ESP-NOW communication between ESP32 devices
+
+#include "time.h" // For getting Date and Time from NTP Server
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 28800; // 28800 seconds corresponds to 8 hours, as SGT is UTC+8.
+const int   daylightOffset_sec = 0; // SG does not have daylight saving.
+
+typedef struct datetime {
+  char dateString[11];
+  char timeString[6];
+}datetime;
+
 // Structure example to receive data
 // Must match the sender structure
 typedef struct esp2_struct_message {
@@ -39,7 +49,7 @@ typedef struct esp2_struct_message {
   float temperature;
   float humidity;
   int gas;
-  int dampness,
+  int dampness;
   float trash;
 }esp2_struct_message;
 
@@ -124,16 +134,20 @@ void connectAWS()
 // Publishes messages to the cloud at AWS_IOT_PUBLISH_TOPIC
 void publishMessage()
 {
+  datetime dt = getLocalTime();
+
   float temperature = board2.temperature;
   float humidity = board2.humidity;
   int gas = board2.gas;
-  int dampness = board2.dampness,
+  int dampness = board2.dampness;
   float trash = board2.trash;
 
   int motion = board3.motion;
   float rating = board3.rating;
 
   StaticJsonDocument<200> doc;
+  doc["day"] = dt.dateString;
+  doc["time"] = dt.timeString;
   doc["temperature"] = temperature;
   doc["humidity"] = humidity;
   doc["gas"] = gas;
@@ -158,6 +172,33 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
   const char* message = doc["message"];
   Serial.println(message);
 }
+
+// Get local time
+struct datetime getLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  // Build date string (YYYY-MM-DD)
+  char dateString[11]; // "YYYY-MM-DD\0" requires 11 characters
+  sprintf(dateString, "%04d-%02d-%02d", timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+
+  // Build time string (HH:mm)
+  char timeString[6]; // "HH:mm\0" requires 6 characters
+  sprintf(timeString, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
+
+  // Print the date and time strings
+  Serial.print("Date: ");
+  Serial.println(dateString);
+  Serial.print("Time: ");
+  Serial.println(timeString);
+
+  datetime dt;
+  dt.dateString = dateString;
+  dt.timeString = timeString;
+  return dt;
+}
  
 void setup() {
   //Initialize Serial Monitor
@@ -166,6 +207,9 @@ void setup() {
   //Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
   connectAWS();
+
+  // Init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
   //Init ESP-NOW
   if (esp_now_init() != ESP_OK) {

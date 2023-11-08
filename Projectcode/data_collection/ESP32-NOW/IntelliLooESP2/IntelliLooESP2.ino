@@ -31,7 +31,7 @@ typedef struct esp2_struct_message {
   float temperature;
   float humidity;
   float gas;
-  int dampness,
+  int dampness;
   float trash;
 }esp2_struct_message;
 // Create a struct_message called myData
