@@ -175,28 +175,26 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
 
 // Get local time
 struct datetime getLocalTime(){
+  datetime dt;
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
     Serial.println("Failed to obtain time");
-    return;
+    strcpy(dt.dateString, "0000-00-00");
+    strcpy(dt.timeString, "00:00");
+    return dt;
   }
-  // Build date string (YYYY-MM-DD)
-  char dateString[11]; // "YYYY-MM-DD\0" requires 11 characters
-  sprintf(dateString, "%04d-%02d-%02d", timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+  // Build date string (YYYY-MM-DD) // "YYYY-MM-DD\0" requires 11 characters
+  sprintf(dt.dateString, "%04d-%02d-%02d", timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
 
-  // Build time string (HH:mm)
-  char timeString[6]; // "HH:mm\0" requires 6 characters
-  sprintf(timeString, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
+  // Build time string (HH:mm) // "HH:mm\0" requires 6 characters
+  sprintf(dt.timeString, "%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min);
 
   // Print the date and time strings
   Serial.print("Date: ");
-  Serial.println(dateString);
+  Serial.println(dt.dateString);
   Serial.print("Time: ");
-  Serial.println(timeString);
+  Serial.println(dt.timeString);
 
-  datetime dt;
-  dt.dateString = dateString;
-  dt.timeString = timeString;
   return dt;
 }
  

@@ -1,3 +1,6 @@
+#include <esp_now.h>
+#include <WiFi.h>
+
 const int buttonPin1 = 18; // Replace with the actual pin numbers for your buttons
 const int buttonPin2 = 5;
 const int buttonPin3 = 16;
@@ -143,11 +146,9 @@ void button5ISR() {
   }
 }
 
-#include <esp_now.h>
-#include <WiFi.h>
-
 // REPLACE WITH THE RECEIVER'S MAC Address
-uint8_t broadcastAddress[] = {0x64, 0xB7, 0x08, 0x60, 0xC6, 0x5C}; // Javon's ESP32 MAC
+< uint8_t broadcastAddress[] = {0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX}; >
+// uint8_t broadcastAddress[] = {0x64, 0xB7, 0x08, 0x60, 0xC6, 0x5C}; // Javon's ESP32 MAC
 
 // Structure example to send data
 // Must match the receiver structure
@@ -202,7 +203,7 @@ void setup() {
  
 void loop() {
   loop_peripherals();
-  float rating = calculate_average();
+  float rating = calculateAverage();
   // Set values to send
   myData.id = 1;
   myData.motion = peopleCount;
