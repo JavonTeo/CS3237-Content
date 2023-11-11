@@ -6,13 +6,13 @@
   // Temperature Sensor Setup
 #include "DHT.h"
 #define DHTPIN 16     // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT21   // DHT 21 sensor
-// #define DHTTYPE DHT11   // DHT 11 sensor
+// #define DHTTYPE DHT21   // DHT 21 sensor
+#define DHTTYPE DHT11   // DHT 11 sensor
 DHT dht(DHTPIN, DHTTYPE);
   // MQ2 Sensor Setup
-#define MQ2_AOPIN 15 
+#define MQ2_AOPIN 36 // 36 is at SVP. VCC: 5V
   // Rain Sensor Setup
-#define RAIN_AOPIN 4 
+#define RAIN_AOPIN 39 // 39 is at SVN. VCC: 3.3V
   // Ultrasound Sensor Setup
 #define HC_TRIGPIN 5 
 #define HC_ECHOPIN 18
@@ -22,9 +22,9 @@ DHT dht(DHTPIN, DHTTYPE);
 #define TIME_TO_SLEEP 300
 
 // REPLACE WITH THE RECEIVER'S MAC Address
-< uint8_t broadcastAddress[] = {0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX}; >
+// < uint8_t broadcastAddress[] = {0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX}; >
 // uint8_t broadcastAddress[] = {0x64, 0xB7, 0x08, 0x60, 0xC6, 0x5C}; // Javon's ESP32 MAC
-// uint8_t broadcastAddress[] = {0x24, 0xDC, 0xC3, 0x98, 0xA4, 0x88}; // ESP32 board1(?)
+uint8_t broadcastAddress[] = {0x24, 0xDC, 0xC3, 0x98, 0xA4, 0x88}; // ESP32 board1(?)
 
 // Structure example to send data
 // Must match the receiver structure
@@ -32,7 +32,7 @@ typedef struct esp2_struct_message {
   int id;
   float temperature;
   float humidity;
-  float gas;
+  int gas;
   int dampness;
   float trash;
 }esp2_struct_message;
@@ -86,8 +86,8 @@ int read_gas() {
     Serial.println("Error: Invalid dampness reading.");
     return -1; // or any other value that signifies an error
   }
-  Serial.print("MQ2 sensor AO value: ");
-  Serial.println(gasValue);
+  // Serial.print("MQ2 sensor AO value: ");
+  // Serial.println(gasValue);
   return gasValue;
 }
 
@@ -98,8 +98,8 @@ int read_damp() {
     Serial.println("Error: Invalid dampness reading.");
     return -1; // or any other value that signifies an error
   }
-  Serial.print("Rain sensor AO value: ");
-  Serial.println(dampness);
+  // Serial.print("Rain sensor AO value: ");
+  // Serial.println(dampness);
   return dampness;
 }
 
@@ -131,8 +131,8 @@ float read_trash() {
   }
   
   // Prints the distance in the Serial Monitor
-  Serial.print("Distance (cm): ");
-  Serial.println(distanceCm);
+  // Serial.print("Distance (cm): ");
+  // Serial.println(distanceCm);
   // Serial.print("Distance (inch): ");
   // Serial.println(distanceInch);
   
@@ -143,7 +143,7 @@ float read_trash() {
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -168,6 +168,10 @@ void setup() {
     Serial.println("Failed to add peer");
     return;
   }
+
+  dht.begin();
+  pinMode(HC_TRIGPIN, OUTPUT);
+  pinMode(HC_ECHOPIN, INPUT);
 }
  
 void loop() {
@@ -184,6 +188,12 @@ void loop() {
   myData.gas = gas;
   myData.dampness = dampness;
   myData.trash = trash;
+  Serial.println(myData.id);
+  Serial.println(myData.temperature);
+  Serial.println(myData.humidity);
+  Serial.println(myData.gas);
+  Serial.println(myData.dampness);
+  Serial.println(myData.trash);
 
   // Send message via ESP-NOW
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
@@ -194,6 +204,6 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(5000);
-  esp_deep_sleep_start();
+  delay(10000);
+  // esp_deep_sleep_start();
 }
