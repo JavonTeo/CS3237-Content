@@ -23,7 +23,7 @@ How it works:
 #include "Secrets.h" // Customer file placed in libraries, to store AWS Certificates/Keys
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
-#include "WiFi.h"
+#include <WiFi.h>
 #include <ArduinoJson.h> // For storing collected data into JSON format
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
@@ -84,6 +84,18 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   } else {
     Serial.println("Unknown data type");
   }
+  Serial.println("BOARD 2:");
+  Serial.println(board2.id);
+  Serial.println(board2.temperature);
+  Serial.println(board2.humidity);
+  Serial.println(board2.gas);
+  Serial.println(board2.dampness);
+  Serial.println(board2.trash);
+  Serial.println("BOARD 3:");
+  Serial.println(board3.id);
+  Serial.println(board3.motion);
+  Serial.println(board3.rating);
+  Serial.println();
 }
 
 // Connects to AWS
@@ -134,8 +146,7 @@ void connectAWS()
 // Publishes messages to the cloud at AWS_IOT_PUBLISH_TOPIC
 void publishMessage()
 {
-  datetime dt = getLocalTime();
-
+  // datetime dt = getLocalTime();
   float temperature = board2.temperature;
   float humidity = board2.humidity;
   int gas = board2.gas;
@@ -145,15 +156,15 @@ void publishMessage()
   int motion = board3.motion;
   float rating = board3.rating;
 
-  if ((temperature == -1) || (humidity == -1) || (gas == -1) || (dampness == -1) || (trash == -1) || isnan(motion) || isnan(rating))
-  {
-    Serial.println("Error: One or more sensor values are not available.");
-    return; // Do not publish if any sensor value is missing
-  }
+  // if ((temperature == -1) || (humidity == -1) || (gas == -1) || (dampness == -1) || (trash == -1) || isnan(motion) || isnan(rating))
+  // {
+  //   Serial.println("Error: One or more sensor values are not available.");
+  //   return; // Do not publish if any sensor value is missing
+  // }
 
   StaticJsonDocument<200> doc;
-  doc["day"] = dt.dateString;
-  doc["time"] = dt.timeString;
+  // doc["day"] = dt.dateString;
+  // doc["time"] = dt.timeString;
   doc["temperature"] = temperature;
   doc["humidity"] = humidity;
   doc["gas"] = gas;
@@ -165,6 +176,7 @@ void publishMessage()
   serializeJson(doc, jsonBuffer); // print to client
  
   client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
+  Serial.println("PUBLISHED");
 }
 
 // Handles messages received from the cloud at AWS_IOT_SUBSCRIBE_TOPIC
@@ -210,7 +222,6 @@ void setup() {
   
   //Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
-  connectAWS();
 
   // Init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -227,10 +238,16 @@ void setup() {
 }
  
 void loop() {
-  if (board2_filled && board3_filled) {
-    //do something
+  // if (board2_filled && board3_filled) {
+  if (board2_filled) {
+    // Connects to AWS, publishes data to AWS, then disconnects WiFi.
+    // getLocalTime();
+    connectAWS();
     publishMessage();
     board2_filled = false;
     board3_filled = false;
+    WiFi.disconnect();
+    Serial.println("DISCONNECTED");
   }
+  WiFi.mode(WIFI_STA);
 }
