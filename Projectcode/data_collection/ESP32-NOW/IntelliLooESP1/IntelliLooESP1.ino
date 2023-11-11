@@ -32,7 +32,7 @@ PubSubClient client(net);
 
 #include <esp_now.h> // For ESP-NOW communication between ESP32 devices
 
-#include "time.h" // For getting Date and Time from NTP Server
+#include <time.h> // For getting Date and Time from NTP Server
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 28800; // 28800 seconds corresponds to 8 hours, as SGT is UTC+8.
 const int   daylightOffset_sec = 0; // SG does not have daylight saving.
@@ -101,7 +101,7 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
 // Connects to AWS
 void connectAWS()
 {
-  WiFi.mode(WIFI_STA);
+  // WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
  
   Serial.println("Connecting to Wi-Fi");
@@ -111,6 +111,9 @@ void connectAWS()
     delay(500);
     Serial.print(".");
   }
+
+  // Init NTP
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
  
   // Configure WiFiClientSecure to use the AWS IoT device credentials
   net.setCACert(AWS_CERT_CA);
@@ -146,7 +149,7 @@ void connectAWS()
 // Publishes messages to the cloud at AWS_IOT_PUBLISH_TOPIC
 void publishMessage()
 {
-  // datetime dt = getLocalTime();
+  datetime dt = getTime();
   float temperature = board2.temperature;
   float humidity = board2.humidity;
   int gas = board2.gas;
@@ -156,15 +159,16 @@ void publishMessage()
   int motion = board3.motion;
   float rating = board3.rating;
 
-  // if ((temperature == -1) || (humidity == -1) || (gas == -1) || (dampness == -1) || (trash == -1) || isnan(motion) || isnan(rating))
+  // || isnan(motion) || isnan(rating)
+  // if ((temperature == -1) || (humidity == -1) || (gas == -1) || (dampness == -1) || (trash == -1) || (dt.dateString == "0000-00-00") || (dt.timeString == "00:00"))
   // {
   //   Serial.println("Error: One or more sensor values are not available.");
   //   return; // Do not publish if any sensor value is missing
   // }
 
   StaticJsonDocument<200> doc;
-  // doc["day"] = dt.dateString;
-  // doc["time"] = dt.timeString;
+  doc["day"] = dt.dateString;
+  doc["time"] = dt.timeString;
   doc["temperature"] = temperature;
   doc["humidity"] = humidity;
   doc["gas"] = gas;
@@ -175,8 +179,10 @@ void publishMessage()
   char jsonBuffer[512];
   serializeJson(doc, jsonBuffer); // print to client
  
-  client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
-  Serial.println("PUBLISHED");
+  bool sent = client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
+  // Serial.print("SENT:");
+  // Serial.println(sent);
+  delay(1000); // Delay required for message to publish fully
 }
 
 // Handles messages received from the cloud at AWS_IOT_SUBSCRIBE_TOPIC
@@ -192,7 +198,7 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
 }
 
 // Get local time
-struct datetime getLocalTime(){
+struct datetime getTime(){
   datetime dt;
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
@@ -219,12 +225,10 @@ struct datetime getLocalTime(){
 void setup() {
   //Initialize Serial Monitor
   Serial.begin(115200);
-  
   //Set device as a Wi-Fi Station
-  WiFi.mode(WIFI_STA);
-
-  // Init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  bool check = WiFi.mode(WIFI_STA);
+  Serial.print("CHECK:");
+  Serial.println(check);
 
   //Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
@@ -241,13 +245,10 @@ void loop() {
   // if (board2_filled && board3_filled) {
   if (board2_filled) {
     // Connects to AWS, publishes data to AWS, then disconnects WiFi.
-    // getLocalTime();
     connectAWS();
     publishMessage();
     board2_filled = false;
     board3_filled = false;
-    WiFi.disconnect();
-    Serial.println("DISCONNECTED");
+    ESP.restart();
   }
-  WiFi.mode(WIFI_STA);
 }
