@@ -145,6 +145,12 @@ void publishMessage()
   int motion = board3.motion;
   float rating = board3.rating;
 
+  if ((temperature == -1) || (humidity == -1) || (gas == -1) || (dampness == -1) || (trash == -1) || isnan(motion) || isnan(rating))
+  {
+    Serial.println("Error: One or more sensor values are not available.");
+    return; // Do not publish if any sensor value is missing
+  }
+
   StaticJsonDocument<200> doc;
   doc["day"] = dt.dateString;
   doc["time"] = dt.timeString;

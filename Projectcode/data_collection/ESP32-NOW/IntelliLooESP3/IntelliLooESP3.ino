@@ -205,7 +205,7 @@ void loop() {
   loop_peripherals();
   float rating = calculateAverage();
   // Set values to send
-  myData.id = 1;
+  myData.id = 3;
   myData.motion = peopleCount;
   myData.rating = rating;
 

@@ -61,9 +61,9 @@ struct dhtValues read_dht() {
   if (isnan(h) || isnan(t) )  // Check if any reads failed and exit early (to try again).
   {
     Serial.println(F("Failed to read from DHT sensor!"));
-    dhtVals.humidity = 0;
-    dhtVals.temperature = 0;
-    // return;
+    dhtVals.humidity = -1;
+    dhtVals.temperature = -1;
+    return dhtVals;
   }
 
   dhtVals.humidity = h;
@@ -81,16 +81,24 @@ struct dhtValues read_dht() {
 int read_gas() {
   // MQ2 gas sensor to read ppm. Analog data. Test using a plastic spark wheel lighter, just press the button without sparking it.
   int gasValue = analogRead(MQ2_AOPIN);
-   Serial.print("MQ2 sensor AO value: ");
-   Serial.println(gasValue);
+  if (gasValue < 0 || gasValue > 4095) {
+    Serial.println("Error: Invalid dampness reading.");
+    return -1; // or any other value that signifies an error
+  }
+  Serial.print("MQ2 sensor AO value: ");
+  Serial.println(gasValue);
   return gasValue;
 }
 
 int read_damp() {
   // Rain sensor to read dampness of toilet floor. Analog data.
   int dampness = analogRead(RAIN_AOPIN);
-   Serial.print("Rain sensor AO value: ");
-   Serial.println(dampness);
+  if (dampness < 0 || dampness > 4096) {
+    Serial.println("Error: Invalid dampness reading.");
+    return -1; // or any other value that signifies an error
+  }
+  Serial.print("Rain sensor AO value: ");
+  Serial.println(dampness);
   return dampness;
 }
 
@@ -111,6 +119,9 @@ float read_trash() {
   
   // Calculate the distance
   float distanceCm = duration * SOUND_SPEED/2;
+  if (isnan(distanceCm)) {
+    return -1;
+  }
   
   // Convert to inches
   // float distanceInch = distanceCm * CM_TO_INCH;
