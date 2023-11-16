@@ -19,12 +19,14 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // Deep Sleep
 #define uS_TO_S_FACTOR 1000000ULL
-#define TIME_TO_SLEEP 300
+#define TIME_TO_SLEEP 10
 
 // REPLACE WITH THE RECEIVER'S MAC Address
 // < uint8_t broadcastAddress[] = {0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX}; >
 // uint8_t broadcastAddress[] = {0x64, 0xB7, 0x08, 0x60, 0xC6, 0x5C}; // Javon's ESP32 MAC
-uint8_t broadcastAddress[] = {0x24, 0xDC, 0xC3, 0x98, 0xA4, 0x88}; // ESP32 board1(?)
+// uint8_t broadcastAddress[] = {0x24, 0xDC, 0xC3, 0x98, 0xA4, 0x88}; // ESP32 board1(?)
+// uint8_t broadcastAddress[] = {0xCC, 0xDB, 0xA7, 0xC5, 0xCD, 0x88}; // ESP
+uint8_t broadcastAddress[] = {0x40, 0x22, 0xD8, 0xF1, 0x4E, 0xD0}; // Sean's new board
 
 // Structure example to send data
 // Must match the receiver structure
@@ -143,7 +145,8 @@ float read_trash() {
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-  // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -204,6 +207,10 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(10000);
-  // esp_deep_sleep_start();
+
+  delay(5000); // buffer time for successfully sending ESP-NOW
+  Serial.println("Going to sleep now");
+  delay(1000);
+  Serial.flush(); 
+  esp_deep_sleep_start();
 }
