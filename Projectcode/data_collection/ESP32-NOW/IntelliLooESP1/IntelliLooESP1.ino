@@ -68,10 +68,10 @@ bool board3_filled = false;
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) {
   char macStr[18];
-  Serial.print("Packet received from: ");
-  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.println(macStr);
+  // Serial.print("Packet received from: ");
+  // snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+  //          mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  // Serial.println(macStr);
   // Update the structures with the new incoming data
   if (len == sizeof(board2)) {
     memcpy(&board2, incomingData, sizeof(board2));
@@ -84,18 +84,18 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   } else {
     Serial.println("Unknown data type");
   }
-  Serial.println("BOARD 2:");
-  Serial.println(board2.id);
-  Serial.println(board2.temperature);
-  Serial.println(board2.humidity);
-  Serial.println(board2.gas);
-  Serial.println(board2.dampness);
-  Serial.println(board2.trash);
-  Serial.println("BOARD 3:");
-  Serial.println(board3.id);
-  Serial.println(board3.motion);
-  Serial.println(board3.rating);
-  Serial.println();
+  // Serial.println("BOARD 2:");
+  // Serial.println(board2.id);
+  // Serial.println(board2.temperature);
+  // Serial.println(board2.humidity);
+  // Serial.println(board2.gas);
+  // Serial.println(board2.dampness);
+  // Serial.println(board2.trash);
+  // Serial.println("BOARD 3:");
+  // Serial.println(board3.id);
+  // Serial.println(board3.motion);
+  // Serial.println(board3.rating);
+  // Serial.println();
 }
 
 // Connects to AWS
@@ -242,11 +242,11 @@ void setup() {
 }
  
 void loop() {
-  // if (board2_filled && board3_filled) {
-  if (board2_filled) {
+  if (board2_filled && board3_filled) {
     // Connects to AWS, publishes data to AWS, then disconnects WiFi.
     connectAWS();
     publishMessage();
+    Serial.println("Sent to AWS!");
     board2_filled = false;
     board3_filled = false;
     ESP.restart();

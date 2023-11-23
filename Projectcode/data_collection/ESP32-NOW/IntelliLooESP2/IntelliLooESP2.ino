@@ -208,9 +208,8 @@ void loop() {
     Serial.println("Error sending the data");
   }
 
-  delay(5000); // buffer time for successfully sending ESP-NOW
+  delay(100); // buffer time for successfully sending ESP-NOW
   Serial.println("Going to sleep now");
-  delay(1000);
   Serial.flush(); 
   esp_deep_sleep_start();
 }
