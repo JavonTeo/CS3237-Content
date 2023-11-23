@@ -19,7 +19,7 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // Deep Sleep
 #define uS_TO_S_FACTOR 1000000ULL
-#define TIME_TO_SLEEP 300
+#define TIME_TO_SLEEP 10
 
 // REPLACE WITH THE RECEIVER'S MAC Address
 < uint8_t broadcastAddress[] = {0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX}; >
@@ -141,7 +141,8 @@ float read_trash() {
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
-  // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -202,6 +203,9 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(10000);
-  // esp_deep_sleep_start();
+
+  delay(100); // buffer time for successfully sending ESP-NOW
+  Serial.println("Going to sleep now");
+  Serial.flush(); 
+  esp_deep_sleep_start();
 }
