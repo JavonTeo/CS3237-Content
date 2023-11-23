@@ -1,12 +1,18 @@
+/**
+Create your own device in your AWS account.
+Guide: https://how2electronics.com/connecting-esp32-to-amazon-aws-iot-core-using-mqtt/
+**/
+
 #include <pgmspace.h>
  
 #define SECRET
 #define THINGNAME "ESP32"                         //change this
  
-const char WIFI_SSID[] = "JAVON PIXEL 6";               //change this
-const char WIFI_PASSWORD[] = "PixelatedIndeed";           //change this
-const char AWS_IOT_ENDPOINT[] = "a39x1y7uhvumbd-ats.iot.ap-southeast-1.amazonaws.com";       //change this
- 
+const char WIFI_SSID[] = <"">;               //change this
+const char WIFI_PASSWORD[] = <"">;           //change this
+const char AWS_IOT_ENDPOINT[] = "a39x1y7uhvumbd-ats.iot.ap-southeast-1.amazonaws.com";       //change this if you are using a different endpoint
+
+// Sample certificates. They can no longer be used. 
 // Amazon Root CA 1
 static const char AWS_CERT_CA[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
