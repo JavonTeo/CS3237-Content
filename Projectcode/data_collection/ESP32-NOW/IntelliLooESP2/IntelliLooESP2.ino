@@ -1,3 +1,6 @@
+/**
+Collects average user rating and user count.
+**/
 #include <esp_now.h>
 #include <WiFi.h>
 
